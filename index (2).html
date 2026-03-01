@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Home Cleaning Scheduler</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#FAFAF8;color:#2C2C2C;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input,textarea{font-family:inherit;outline:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes checkPop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+.fade-in{animation:fadeIn .3s ease}
+.task-tap:active{transform:scale(.98)}
+.day-tabs::-webkit-scrollbar{height:0}.day-tabs{-ms-overflow-style:none;scrollbar-width:none}
+.footer{text-align:center;margin-top:32px;padding:20px 0;border-top:1px solid #E8E6E1}
+.footer a{font-size:36px;color:#AAA;text-decoration:none;letter-spacing:.5px}
+.footer a span{font-weight:600;color:#888}
+.card{background:#fff;border-radius:16px;border:1px solid #E8E6E1;overflow:hidden;margin-bottom:16px}
+.card-header{padding:16px 20px;font-size:13px;font-weight:600;color:#999;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid #F0EDE8}
+.btn-primary{width:100%;padding:16px;background:#2C2C2C;color:#fff;border-radius:14px;font-size:16px;font-weight:700}
+.btn-green{width:100%;padding:20px 24px;background:linear-gradient(135deg,#81B29A,#6A9C85);color:#fff;border-radius:16px;font-size:18px;font-weight:700;box-shadow:0 6px 24px rgba(129,178,154,.35);display:flex;align-items:center;justify-content:center;gap:12px}
+.btn-outline{width:100%;padding:14px 20px;background:#fff;color:#2C2C2C;border:2px solid #E8E6E1;border-radius:14px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px}
+.center-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.max-w{max-width:520px;width:100%;margin:0 auto}
+.label{font-size:13px;font-weight:600;color:#666;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:8px}
+.input{width:100%;padding:14px 16px;border:2px solid #E8E6E1;border-radius:12px;font-size:15px;box-sizing:border-box}
+.chip{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;border:2px solid #E8E6E1}
+.lang-toggle{padding:6px 12px;border-radius:8px;font-size:13px;font-weight:600;background:#F7F5F0;border:1px solid #E8E6E1;color:#666;position:fixed;top:12px;right:12px;z-index:200}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ============================================================
+// TRANSLATIONS
+// ============================================================
+const T={
+en:{
+  title:"Home Cleaning Scheduler",
+  subtitle:"Organize cleaning schedules & share them with your cleaner",
+  getStarted:"Get Started",
+  getStartedDesc:"Set up cleaning schedules for your properties and generate share links for your cleaner",
+  myProperties:"My Properties",
+  addresses:"addresses",address:"address",
+  noPropsYet:"No properties yet",addFirst:"Add your first address to get started",
+  addNewAddress:"+ Add New Address",
+  delete:"Delete",deleteConfirm:"Delete this property?",
+  rooms:"rooms",tasks:"tasks",
+  setUp:"Set Up Property",
+  homeAddress:"Home Address",addrPlaceholder:"123 Main St, City",
+  cleaningDays:"Cleaning Days",
+  hoursPerDay:"Hours Per Day",hoursPlaceholder:"e.g. 9am - 2pm",
+  roomsToClean:"Rooms to Clean",addCustomRoom:"Add custom room...",
+  continueToSchedule:"Continue to Schedule →",
+  backToProperties:"← Back to Properties",
+  editSetup:"Edit Setup",
+  tasksAcross:"tasks across",days:"days",
+  roomOrder:"Room Order — Drag to reorder priority",
+  selectDay:"Select a day above to manage tasks",
+  doneShare:"Done — Share with My Cleaner",
+  generateLink:"Generate a unique link for your cleaner",
+  customTasks:"Custom Tasks",addCustomTask:"Add a custom task...",add:"Add",
+  notesLabel:"Notes",notesPlaceholder:"Any special instructions...",
+  photosLabel:"Photos",
+  scheduleComplete:"Schedule Complete!",
+  shareWithCleaner:"Share it with your cleaner",
+  scheduleSummary:"Schedule Summary",
+  totalTasks:"total tasks",
+  shareSection:"Share with Your Cleaner",
+  shareLinkDesc:"This link is unique to",shareLinkDesc2:"Your cleaner opens it and sees only this schedule — no login, no app needed. Works on any phone.",
+  copyLinkWhatsApp:"Copy Link for WhatsApp",
+  copiedPaste:"Copied! Paste in WhatsApp",
+  photosTooLarge:"Photos make the link too large. Use \"Copy as Text\" below, or remove photos to enable link sharing.",
+  copyAsText:"Copy as Text (WhatsApp / SMS)",
+  copied:"Copied!",
+  printSavePDF:"Print / Save as PDF",
+  previewCleanerView:"Preview Cleaner View",
+  backToEditing:"← Back to Editing",
+  cleaningSchedule:"Cleaning Schedule",
+  tasksDone:"tasks done",of:"of",
+  complete:"complete",
+  allDone:"All Done!",allDoneDesc:"Great job — everything is complete.",
+  back:"← Back",
+  note:"Note",
+  refPhotos:"Reference Photos",
+  today:"TODAY",
+  Mon:"Mon",Tue:"Tue",Wed:"Wed",Thu:"Thu",Fri:"Fri",Sat:"Sat",Sun:"Sun",
+  // Room names
+  Kitchen:"Kitchen",Bathroom:"Bathroom","Living Room":"Living Room",Bedroom:"Bedroom",
+  "Laundry Room":"Laundry Room","Dining Room":"Dining Room","Home Office":"Home Office",
+  "Hallway / Entryway":"Hallway / Entryway",Garage:"Garage","Patio / Outdoor":"Patio / Outdoor",
+  // Task translations (keep English as-is)
+},
+es:{
+  title:"Organizador de Limpieza",
+  subtitle:"Organiza horarios de limpieza y compártelos con tu limpiador/a",
+  getStarted:"Comenzar",
+  getStartedDesc:"Configura horarios de limpieza para tus propiedades y genera enlaces para compartir con tu limpiador/a",
+  myProperties:"Mis Propiedades",
+  addresses:"direcciones",address:"dirección",
+  noPropsYet:"No hay propiedades aún",addFirst:"Agrega tu primera dirección para comenzar",
+  addNewAddress:"+ Agregar Nueva Dirección",
+  delete:"Eliminar",deleteConfirm:"¿Eliminar esta propiedad?",
+  rooms:"habitaciones",tasks:"tareas",
+  setUp:"Configurar Propiedad",
+  homeAddress:"Dirección",addrPlaceholder:"Ej: Calle Principal 123",
+  cleaningDays:"Días de Limpieza",
+  hoursPerDay:"Horario por Día",hoursPlaceholder:"Ej: 9am - 2pm",
+  roomsToClean:"Habitaciones a Limpiar",addCustomRoom:"Agregar habitación...",
+  continueToSchedule:"Continuar al Horario →",
+  backToProperties:"← Volver a Propiedades",
+  editSetup:"Editar Config.",
+  tasksAcross:"tareas en",days:"días",
+  roomOrder:"Orden de Habitaciones — Arrastra para reordenar",
+  selectDay:"Selecciona un día arriba para gestionar tareas",
+  doneShare:"Listo — Compartir con Mi Limpiador/a",
+  generateLink:"Genera un enlace único para tu limpiador/a",
+  customTasks:"Tareas Personalizadas",addCustomTask:"Agregar tarea personalizada...",add:"Agregar",
+  notesLabel:"Notas",notesPlaceholder:"Instrucciones especiales...",
+  photosLabel:"Fotos",
+  scheduleComplete:"¡Horario Completo!",
+  shareWithCleaner:"Compártelo con tu limpiador/a",
+  scheduleSummary:"Resumen del Horario",
+  totalTasks:"tareas totales",
+  shareSection:"Compartir con Tu Limpiador/a",
+  shareLinkDesc:"Este enlace es único para",shareLinkDesc2:"Tu limpiador/a lo abre y ve solo este horario — sin cuenta, sin app. Funciona en cualquier teléfono.",
+  copyLinkWhatsApp:"Copiar Enlace para WhatsApp",
+  copiedPaste:"¡Copiado! Pega en WhatsApp",
+  photosTooLarge:"Las fotos hacen el enlace muy grande. Usa \"Copiar como Texto\" abajo, o elimina fotos.",
+  copyAsText:"Copiar como Texto (WhatsApp / SMS)",
+  copied:"¡Copiado!",
+  printSavePDF:"Imprimir / Guardar PDF",
+  previewCleanerView:"Vista Previa del Limpiador/a",
+  backToEditing:"← Volver a Editar",
+  cleaningSchedule:"Horario de Limpieza",
+  tasksDone:"tareas hechas",of:"de",
+  complete:"completadas",
+  allDone:"¡Todo Listo!",allDoneDesc:"¡Buen trabajo! Todo está completo.",
+  back:"← Volver",
+  note:"Nota",
+  refPhotos:"Fotos de Referencia",
+  today:"HOY",
+  Mon:"Lun",Tue:"Mar",Wed:"Mié",Thu:"Jue",Fri:"Vie",Sat:"Sáb",Sun:"Dom",
+  Kitchen:"Cocina",Bathroom:"Baño","Living Room":"Sala","Bedroom":"Dormitorio",
+  "Laundry Room":"Lavandería","Dining Room":"Comedor","Home Office":"Oficina",
+  "Hallway / Entryway":"Pasillo / Entrada",Garage:"Garaje","Patio / Outdoor":"Patio / Exterior",
+}};
+
+let lang=localStorage.getItem("csa-lang")||"en";
+function t(key){return T[lang][key]||T.en[key]||key;}
+function tRoom(r){return T[lang][r]||r;}
+function setLang(l){lang=l;localStorage.setItem("csa-lang",l);R();}
+function dayShort(d){const map={Monday:"Mon",Tuesday:"Tue",Wednesday:"Wed",Thursday:"Thu",Friday:"Fri",Saturday:"Sat",Sunday:"Sun"};return t(map[d])||d.slice(0,3);}
+function langBtn(){return `<button class="lang-toggle" onclick="setLang(lang==='en'?'es':'en')">${lang==='en'?'🇪🇸 Español':'🇺🇸 English'}</button>`;}
+
+// ============================================================
+// DATA
+// ============================================================
+const ROOM_PRESETS={"Kitchen":["Wipe countertops","Clean stovetop","Clean oven","Wash dishes","Empty dishwasher","Clean microwave","Wipe cabinet fronts","Clean sink","Mop floor","Sweep floor","Clean fridge exterior","Clean fridge interior","Take out trash","Wipe backsplash","Clean range hood"],"Bathroom":["Clean toilet","Scrub bathtub/shower","Clean shower glass","Wipe mirrors","Clean sink & vanity","Mop floor","Replace towels","Empty trash","Wipe fixtures","Clean grout","Restock supplies","Disinfect surfaces"],"Living Room":["Vacuum carpet/rug","Dust furniture","Wipe TV screen","Fluff pillows","Dust shelves","Clean windows","Wipe light switches","Dust blinds/curtains","Vacuum under furniture","Polish wood surfaces"],"Bedroom":["Make bed","Change sheets","Vacuum floor","Dust furniture","Dust nightstands","Clean mirrors","Organize closet","Wipe light switches","Dust ceiling fan","Vacuum under bed"],"Laundry Room":["Start laundry load","Transfer to dryer","Fold & put away clothes","Clean lint trap","Wipe washer/dryer exterior","Clean washer drum","Sort clothes","Iron clothes","Mop floor"],"Dining Room":["Wipe table","Clean chairs","Vacuum/mop floor","Dust buffet/sideboard","Clean chandelier","Wipe baseboards","Polish furniture"],"Home Office":["Dust desk","Wipe monitor","Organize papers","Vacuum floor","Dust shelves","Clean keyboard/mouse","Empty trash","Wipe light switches"],"Hallway / Entryway":["Sweep/mop floor","Wipe door handles","Clean front door","Dust coat rack","Vacuum rug/mat","Wipe baseboards","Clean light fixtures"],"Garage":["Sweep floor","Organize tools","Wipe surfaces","Take out recycling","Clean windows","Dust shelves"],"Patio / Outdoor":["Sweep patio","Wipe outdoor furniture","Clean grill","Water plants","Clean outdoor lights","Hose down surfaces"]};
+
+const TASK_ES={"Wipe countertops":"Limpiar encimeras","Clean stovetop":"Limpiar estufa","Clean oven":"Limpiar horno","Wash dishes":"Lavar platos","Empty dishwasher":"Vaciar lavaplatos","Clean microwave":"Limpiar microondas","Wipe cabinet fronts":"Limpiar gabinetes","Clean sink":"Limpiar fregadero","Mop floor":"Trapear piso","Sweep floor":"Barrer piso","Clean fridge exterior":"Limpiar exterior del refrigerador","Clean fridge interior":"Limpiar interior del refrigerador","Take out trash":"Sacar la basura","Wipe backsplash":"Limpiar salpicadero","Clean range hood":"Limpiar campana","Clean toilet":"Limpiar inodoro","Scrub bathtub/shower":"Fregar bañera/ducha","Clean shower glass":"Limpiar vidrio de ducha","Wipe mirrors":"Limpiar espejos","Clean sink & vanity":"Limpiar lavabo y tocador","Replace towels":"Cambiar toallas","Empty trash":"Vaciar basura","Wipe fixtures":"Limpiar accesorios","Clean grout":"Limpiar juntas","Restock supplies":"Reponer suministros","Disinfect surfaces":"Desinfectar superficies","Vacuum carpet/rug":"Aspirar alfombra","Dust furniture":"Quitar polvo a muebles","Wipe TV screen":"Limpiar pantalla TV","Fluff pillows":"Esponjar almohadas","Dust shelves":"Quitar polvo a estantes","Clean windows":"Limpiar ventanas","Wipe light switches":"Limpiar interruptores","Dust blinds/curtains":"Quitar polvo a persianas/cortinas","Vacuum under furniture":"Aspirar bajo muebles","Polish wood surfaces":"Pulir superficies de madera","Make bed":"Hacer la cama","Change sheets":"Cambiar sábanas","Vacuum floor":"Aspirar piso","Dust nightstands":"Quitar polvo a mesitas","Clean mirrors":"Limpiar espejos","Organize closet":"Organizar armario","Dust ceiling fan":"Quitar polvo al ventilador","Vacuum under bed":"Aspirar bajo la cama","Start laundry load":"Poner lavadora","Transfer to dryer":"Pasar a secadora","Fold & put away clothes":"Doblar y guardar ropa","Clean lint trap":"Limpiar filtro de pelusa","Wipe washer/dryer exterior":"Limpiar exterior lavadora/secadora","Clean washer drum":"Limpiar tambor lavadora","Sort clothes":"Clasificar ropa","Iron clothes":"Planchar ropa","Wipe table":"Limpiar mesa","Clean chairs":"Limpiar sillas","Vacuum/mop floor":"Aspirar/trapear piso","Dust buffet/sideboard":"Quitar polvo al aparador","Clean chandelier":"Limpiar lámpara","Wipe baseboards":"Limpiar zócalos","Polish furniture":"Pulir muebles","Dust desk":"Quitar polvo al escritorio","Wipe monitor":"Limpiar monitor","Organize papers":"Organizar papeles","Clean keyboard/mouse":"Limpiar teclado/ratón","Sweep/mop floor":"Barrer/trapear piso","Wipe door handles":"Limpiar manijas","Clean front door":"Limpiar puerta principal","Dust coat rack":"Quitar polvo al perchero","Vacuum rug/mat":"Aspirar tapete","Clean light fixtures":"Limpiar lámparas","Sweep floor":"Barrer piso","Organize tools":"Organizar herramientas","Wipe surfaces":"Limpiar superficies","Take out recycling":"Sacar reciclaje","Sweep patio":"Barrer patio","Wipe outdoor furniture":"Limpiar muebles exteriores","Clean grill":"Limpiar parrilla","Water plants":"Regar plantas","Clean outdoor lights":"Limpiar luces exteriores","Hose down surfaces":"Lavar con manguera"};
+function tTask(task){return lang==='es'?(TASK_ES[task]||task):task;}
+
+const ALL_DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const DAY_COLORS={Monday:"#E07A5F",Tuesday:"#3D85C6",Wednesday:"#81B29A",Thursday:"#F2CC8F",Friday:"#9B72CF",Saturday:"#E08DAC",Sunday:"#6AAFE6"};
+const STORE="csa-v3";
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+let S={screen:"home",properties:[],activePropertyId:null,activeDay:null,activeRoom:null,cleanerData:null,cleanerDay:null,checkedTasks:{},expandedRoom:null};
+
+function newProp(addr){return{id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),address:addr||'',selectedDays:[],dayHours:{},rooms:[],schedule:{},roomOrder:{},notes:{},photos:{},customTasks:{}};}
+function getP(){return S.properties.find(p=>p.id===S.activePropertyId)||null;}
+function gk(d,r){return d+"::"+r;}
+function gor(p,d){const o=p.roomOrder[d]||p.rooms;return o.filter(r=>p.rooms.includes(r));}
+function gdc(p,d){let c=0;p.rooms.forEach(r=>{c+=(p.schedule[gk(d,r)]||[]).length;});return c;}
+function gtt(p){return p.selectedDays.reduce((s,d)=>s+gdc(p,d),0);}
+function save(){try{localStorage.setItem(STORE,JSON.stringify({properties:S.properties}));}catch(e){}}
+function load(){try{const r=localStorage.getItem(STORE);if(r){S.properties=JSON.parse(r).properties||[];}}catch(e){}}
+
+function encSch(p){const d={a:p.address,sd:p.selectedDays,dh:p.dayHours,r:p.rooms,s:p.schedule,ro:p.roomOrder,n:p.notes,ct:p.customTasks};try{return btoa(unescape(encodeURIComponent(JSON.stringify(d))));}catch(e){return null;}}
+function decSch(str){try{const d=JSON.parse(decodeURIComponent(escape(atob(str))));return{address:d.a,selectedDays:d.sd,dayHours:d.dh,rooms:d.r,schedule:d.s,roomOrder:d.ro,notes:d.n,photos:d.p||{},customTasks:d.ct||{}};}catch(e){return null;}}
+function getLink(p){const e=encSch(p);if(!e)return null;return location.origin+location.pathname+"?s="+encodeURIComponent(e);}
+
+function checkURL(){const params=new URLSearchParams(location.search);const s=params.get("s");if(s){const d=decSch(decodeURIComponent(s));if(d){S.cleanerData=d;S.screen="cleaner";S.checkedTasks={};S.expandedRoom=null;const di=new Date().getDay();const today=ALL_DAYS[di===0?6:di-1];S.cleanerDay=d.selectedDays.includes(today)?today:d.selectedDays[0];return true;}}return false;}
+
+const $=()=>document.getElementById("app");
+function R(){({home:rHome,dashboard:rDash,setup:rSetup,schedule:rSched,share:rShare,preview:rPreview,cleaner:rCleaner})[S.screen]();}
+function ft(){return '<div class="footer"><a href="https://www.loohaven.com" target="_blank" rel="noopener noreferrer">Brought to you by <span>www.loohaven.com</span></a></div>';}
+
+// HOME
+function rHome(){
+  $().innerHTML=`${langBtn()}<div class="center-page" style="background:linear-gradient(160deg,#F7F5F0,#EDE8DF)"><div class="max-w fade-in">
+    <div style="text-align:center;margin-bottom:40px"><div style="font-size:48px;margin-bottom:12px">🏠</div>
+    <h1 style="font-family:'Playfair Display',serif;font-size:32px;margin:0 0 8px">${t('title')}</h1>
+    <p style="color:#888;font-size:15px">${t('subtitle')}</p></div>
+    <button onclick="S.screen='dashboard';load();R()" style="padding:28px 24px;background:#fff;border:2px solid #E8E6E1;border-radius:20px;text-align:left;box-shadow:0 4px 20px rgba(0,0,0,.05);width:100%">
+      <div style="font-size:28px;margin-bottom:8px">👤</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">${t('getStarted')}</div>
+      <div style="font-size:14px;color:#888">${t('getStartedDesc')}</div>
+    </button>${ft()}</div></div>`;
+}
+
+// DASHBOARD
+function rDash(){
+  const cards=S.properties.map(p=>{const tt=gtt(p);
+    const chips=p.selectedDays.map(d=>`<span style="padding:4px 10px;border-radius:6px;background:${DAY_COLORS[d]};color:#fff;font-size:11px;font-weight:600">${dayShort(d)}</span>`).join(" ");
+    return `<div class="card" style="cursor:pointer;position:relative" onclick="S.activePropertyId='${p.id}';S.activeDay=null;S.activeRoom=null;S.screen='schedule';R()">
+      <div style="padding:20px"><div style="font-size:18px;font-weight:700;margin-bottom:8px">🏠 ${esc(p.address)||'<span style=color:#CCC>—</span>'}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${chips}</div>
+      <div style="font-size:13px;color:#888">${p.rooms.length} ${t('rooms')} • ${tt} ${t('tasks')}</div></div>
+      <button onclick="event.stopPropagation();if(confirm('${t('deleteConfirm')}')){S.properties=S.properties.filter(x=>x.id!=='${p.id}');save();R()}" style="position:absolute;top:12px;right:12px;padding:4px 10px;background:transparent;border:1px solid #E8E6E1;border-radius:8px;font-size:11px;color:#C44">${t('delete')}</button></div>`;}).join("");
+  const empty=S.properties.length===0?`<div style="text-align:center;padding:60px 20px;color:#BBB"><div style="font-size:48px;margin-bottom:16px">📋</div><div style="font-size:16px;font-weight:500;margin-bottom:8px">${t('noPropsYet')}</div><div style="font-size:14px">${t('addFirst')}</div></div>`:'';
+  $().innerHTML=`${langBtn()}<div style="min-height:100vh;background:#FAFAF8">
+    <div style="background:#fff;border-bottom:1px solid #E8E6E1;padding:16px 20px;position:sticky;top:0;z-index:100"><div style="max-width:600px;margin:0 auto">
+      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700">🏠 ${t('myProperties')}</div>
+      <div style="font-size:13px;color:#999;margin-top:2px">${S.properties.length} ${S.properties.length!==1?t('addresses'):t('address')}</div></div></div>
+    <div style="max-width:600px;margin:0 auto;padding:20px 16px">${cards}${empty}
+      <button onclick="var p=newProp();S.properties.push(p);S.activePropertyId=p.id;S.screen='setup';save();R()" style="width:100%;padding:18px;background:#2C2C2C;color:#fff;border-radius:14px;font-size:16px;font-weight:700;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px">${t('addNewAddress')}</button>
+    ${ft()}</div></div>`;
+}
+
+// SETUP
+function rSetup(){const p=getP();if(!p)return;
+  const daysH=ALL_DAYS.map(d=>{const sel=p.selectedDays.includes(d);return `<button onclick="var p=getP();var i=p.selectedDays.indexOf('${d}');if(i>=0)p.selectedDays.splice(i,1);else p.selectedDays.push('${d}');save();R()" class="chip" style="border-color:${sel?DAY_COLORS[d]:'#E8E6E1'};background:${sel?DAY_COLORS[d]:'transparent'};color:${sel?'#fff':'#888'}">${dayShort(d)}</button>`;}).join("");
+  const hoursH=p.selectedDays.map(d=>`<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px"><span style="width:80px;font-size:14px;font-weight:600;color:${DAY_COLORS[d]}">${dayShort(d)}</span><input value="${esc(p.dayHours[d]||'')}" onchange="getP().dayHours['${d}']=this.value;save()" placeholder="${t('hoursPlaceholder')}" class="input" style="flex:1;padding:10px 14px;border-radius:10px;font-size:14px"></div>`).join("");
+  const roomsH=Object.keys(ROOM_PRESETS).map(r=>{const sel=p.rooms.includes(r);return `<button onclick="var p=getP();var i=p.rooms.indexOf('${esc(r)}');if(i>=0)p.rooms.splice(i,1);else p.rooms.push('${esc(r)}');save();R()" class="chip" style="border-color:${sel?'#2C2C2C':'#E8E6E1'};background:${sel?'#2C2C2C':'transparent'};color:${sel?'#fff':'#888'};font-weight:500">${tRoom(r)}</button>`;}).join("");
+  const ok=p.address&&p.selectedDays.length&&p.rooms.length;
+  $().innerHTML=`${langBtn()}<div class="center-page" style="background:linear-gradient(160deg,#F7F5F0,#EDE8DF)"><div class="max-w fade-in">
+    <div style="text-align:center;margin-bottom:40px"><div style="font-size:40px;margin-bottom:8px">🏠</div><h1 style="font-family:'Playfair Display',serif;font-size:28px;margin:0 0 8px">${t('setUp')}</h1></div>
+    <div style="background:#fff;border-radius:20px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.06);border:1px solid #E8E6E1">
+      <label style="display:block;margin-bottom:20px"><span class="label">${t('homeAddress')}</span><input value="${esc(p.address)}" oninput="getP().address=this.value;save()" placeholder="${t('addrPlaceholder')}" class="input"></label>
+      <div style="margin-bottom:20px"><span class="label">${t('cleaningDays')}</span><div style="display:flex;flex-wrap:wrap;gap:8px">${daysH}</div></div>
+      ${p.selectedDays.length?`<div style="margin-bottom:20px"><span class="label">${t('hoursPerDay')}</span>${hoursH}</div>`:''}
+      <div style="margin-bottom:24px"><span class="label">${t('roomsToClean')}</span><div style="display:flex;flex-wrap:wrap;gap:8px">${roomsH}</div>
+        <div style="display:flex;gap:8px;margin-top:10px"><input id="crIn" placeholder="${t('addCustomRoom')}" class="input" style="flex:1;padding:10px 14px;border-radius:10px;font-size:14px" onkeydown="if(event.key==='Enter'){var n=this.value.trim();var p=getP();if(n&&!p.rooms.includes(n)){p.rooms.push(n);if(!ROOM_PRESETS[n])ROOM_PRESETS[n]=[];save();R();}}">
+        <button onclick="var n=document.getElementById('crIn').value.trim();var p=getP();if(n&&!p.rooms.includes(n)){p.rooms.push(n);if(!ROOM_PRESETS[n])ROOM_PRESETS[n]=[];save();R();}" style="padding:10px 16px;background:#2C2C2C;color:#fff;border-radius:10px;font-size:14px;font-weight:600">+</button></div></div>
+      <button onclick="if(getP().address&&getP().selectedDays.length&&getP().rooms.length){S.screen='schedule';S.activeDay=null;S.activeRoom=null;save();R()}" class="btn-primary" style="background:${ok?'#2C2C2C':'#CCC'};cursor:${ok?'pointer':'not-allowed'}">${t('continueToSchedule')}</button>
+      <button onclick="S.screen='dashboard';R()" style="width:100%;padding:12px;background:transparent;color:#999;font-size:14px;margin-top:8px">${t('backToProperties')}</button>
+    </div>${ft()}</div></div>`;
+}
+
+// SCHEDULE
+function rSched(){const p=getP();if(!p)return;const total=gtt(p);
+  const dayTabs=p.selectedDays.map(d=>{const active=S.activeDay===d;const count=gdc(p,d);
+    return `<button onclick="S.activeDay=S.activeDay==='${d}'?null:'${d}';S.activeRoom=null;R()" style="padding:12px 20px;border-radius:12px;background:${active?DAY_COLORS[d]:'#fff'};color:${active?'#fff':'#666'};font-size:14px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.06);white-space:nowrap;flex-shrink:0">${dayShort(d)} ${p.dayHours[d]?'<span style="opacity:.8;font-weight:400">• '+esc(p.dayHours[d])+'</span>':''}
+    <span style="display:inline-block;margin-left:8px;background:${active?'rgba(255,255,255,.3)':'#F0EDE8'};padding:2px 8px;border-radius:20px;font-size:12px">${count}</span></button>`;}).join("");
+  let dc='';
+  if(S.activeDay){const ord=gor(p,S.activeDay);
+    const rc=ord.map((room,idx)=>{const key=gk(S.activeDay,room);const tasks=p.schedule[key]||[];const isA=S.activeRoom===room;let det='';
+      if(isA){
+        const pre=(ROOM_PRESETS[room]||[]).map(tt=>{const on=tasks.includes(tt);return `<button onclick="event.stopPropagation();var p=getP(),k='${key}',t='${esc(tt)}';if(!p.schedule[k])p.schedule[k]=[];var i=p.schedule[k].indexOf(t);if(i>=0)p.schedule[k].splice(i,1);else p.schedule[k].push(t);save();R()" style="padding:8px 14px;border-radius:8px;border:2px solid ${on?DAY_COLORS[S.activeDay]:'#E8E6E1'};background:${on?DAY_COLORS[S.activeDay]+'15':'transparent'};color:${on?DAY_COLORS[S.activeDay]:'#888'};font-size:13px;font-weight:500">${on?'✓ ':''}${tTask(tt)}</button>`;}).join("");
+        const cust=(p.customTasks[key]||[]).map(tt=>{const on=tasks.includes(tt);return `<button onclick="event.stopPropagation();var p=getP(),k='${key}',t='${esc(tt)}';if(!p.schedule[k])p.schedule[k]=[];var i=p.schedule[k].indexOf(t);if(i>=0)p.schedule[k].splice(i,1);else p.schedule[k].push(t);save();R()" style="padding:8px 14px;border-radius:8px;border:2px solid ${on?DAY_COLORS[S.activeDay]:'#E8E6E1'};background:${on?DAY_COLORS[S.activeDay]+'15':'transparent'};color:${on?DAY_COLORS[S.activeDay]:'#888'};font-size:13px;font-weight:500">${on?'✓ ':''}${esc(tt)}</button>`;}).join("");
+        const phL=(p.photos[key]||[]).map((_,i)=>`<div style="position:relative;display:inline-block"><img src="${p.photos[key][i]}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;border:2px solid #E8E6E1"><button onclick="event.stopPropagation();getP().photos['${key}'].splice(${i},1);save();R()" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:#C44;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center">×</button></div>`).join("");
+        det=`<div style="padding:0 20px 20px 60px" class="fade-in">
+          <div style="margin-bottom:16px"><div class="label" style="margin-bottom:10px">${t('tasks')}</div><div style="display:flex;flex-wrap:wrap;gap:6px">${pre}</div></div>
+          <div style="margin-bottom:16px"><div class="label" style="margin-bottom:10px">${t('customTasks')}</div><div style="display:flex;flex-wrap:wrap;gap:6px">${cust}</div>
+            <div style="display:flex;gap:8px;margin-top:8px"><input id="ctIn" placeholder="${t('addCustomTask')}" class="input" style="flex:1;padding:10px 14px;border-radius:10px;font-size:13px" onkeydown="if(event.key==='Enter')addCT()">
+            <button onclick="addCT()" style="padding:10px 16px;background:${DAY_COLORS[S.activeDay]};color:#fff;border-radius:10px;font-size:13px;font-weight:600">${t('add')}</button></div></div>
+          <div style="margin-bottom:16px"><div class="label" style="margin-bottom:10px">${t('notesLabel')}</div>
+            <textarea oninput="getP().notes['${key}']=this.value;save()" placeholder="${t('notesPlaceholder')}" rows="3" class="input" style="padding:12px 14px;border-radius:10px;font-size:13px;resize:vertical;line-height:1.5">${esc(p.notes[key]||'')}</textarea></div>
+          <div><div class="label" style="margin-bottom:10px">${t('photosLabel')}</div><div style="display:flex;flex-wrap:wrap;gap:8px">${phL}
+            <button onclick="document.getElementById('phIn').click()" style="width:80px;height:80px;border-radius:10px;border:2px dashed #DDD;background:#FAFAF8;font-size:24px;color:#CCC;display:flex;align-items:center;justify-content:center">+</button>
+            <input type="file" id="phIn" accept="image/*" style="display:none" onchange="handlePh(this)"></div></div></div>`;}
+      return `<div style="border-bottom:1px solid #F0EDE8" draggable="true" ondragstart="dS(event,${idx})" ondragover="dO(event,${idx})" ondrop="dD(event)" ondragend="dE()">
+        <div onclick="S.activeRoom=S.activeRoom==='${esc(room)}'?null:'${esc(room)}';R()" style="padding:14px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none">
+          <span style="cursor:grab;font-size:16px;color:#CCC">⠿</span>
+          <span style="background:${DAY_COLORS[S.activeDay]};color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">${idx+1}</span>
+          <span style="font-weight:600;font-size:15px;flex:1">${tRoom(room)}</span><span style="font-size:13px;color:#999">${tasks.length} ${t('tasks')}</span>
+          <span style="font-size:18px;color:#CCC;transform:${isA?'rotate(180deg)':'none'};transition:transform .2s">▾</span></div>${det}</div>`;}).join("");
+    dc=`<div class="fade-in"><div class="card"><div class="card-header">${t('roomOrder')}</div>${rc}</div></div>`;
+  } else {dc=`<div style="text-align:center;padding:60px 20px;color:#BBB"><div style="font-size:48px;margin-bottom:16px">📋</div><div style="font-size:16px;font-weight:500">${t('selectDay')}</div></div>`;}
+
+  $().innerHTML=`${langBtn()}<div style="min-height:100vh;background:#FAFAF8">
+    <div style="background:#fff;border-bottom:1px solid #E8E6E1;padding:16px 20px;position:sticky;top:0;z-index:100">
+      <div style="max-width:800px;margin:0 auto;display:flex;align-items:center;justify-content:space-between"><div>
+        <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700">🏠 ${esc(p.address)}</div>
+        <div style="font-size:12px;color:#999;margin-top:2px">${total} ${t('tasksAcross')} ${p.selectedDays.length} ${t('days')}</div></div>
+        <div style="display:flex;gap:8px">
+          <button onclick="S.screen='setup';R()" style="padding:8px 14px;background:transparent;border:2px solid #E8E6E1;border-radius:10px;font-size:13px;font-weight:600;color:#888">${t('editSetup')}</button>
+          <button onclick="S.screen='dashboard';R()" style="padding:8px 14px;background:transparent;border:2px solid #E8E6E1;border-radius:10px;font-size:13px;font-weight:600;color:#888">${t('backToProperties')}</button></div></div></div>
+    <div style="max-width:800px;margin:0 auto;padding:20px 16px">
+      <div class="day-tabs" style="display:flex;gap:8px;margin-bottom:24px;overflow-x:auto;padding-bottom:4px">${dayTabs}</div>${dc}
+      ${total>0?`<div style="margin-top:24px"><button onclick="S.screen='share';R()" class="btn-green"><span style="font-size:24px">✅</span> ${t('doneShare')}</button><p style="text-align:center;font-size:13px;color:#BBB;margin-top:10px">${t('generateLink')}</p></div>`:''}
+    ${ft()}</div></div>`;
+}
+
+function addCT(){const i=document.getElementById("ctIn");if(!i)return;const tt=i.value.trim();if(!tt)return;const p=getP();const k=gk(S.activeDay,S.activeRoom);if(!p.customTasks[k])p.customTasks[k]=[];p.customTasks[k].push(tt);if(!p.schedule[k])p.schedule[k]=[];p.schedule[k].push(tt);save();R();}
+function handlePh(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const p=getP();const k=gk(S.activeDay,S.activeRoom);if(!p.photos[k])p.photos[k]=[];p.photos[k].push(e.target.result);save();R();};r.readAsDataURL(f);}
+let _di=null,_doi=null;
+function dS(e,i){_di=i;e.dataTransfer.effectAllowed="move";}function dO(e,i){e.preventDefault();_doi=i;}
+function dD(e){e.preventDefault();if(_di===null||_doi===null)return;const p=getP();const o=[...gor(p,S.activeDay)];const[item]=o.splice(_di,1);o.splice(_doi,0,item);p.roomOrder[S.activeDay]=o;save();R();}function dE(){_di=null;_doi=null;}
+
+// SHARE
+function rShare(){const p=getP();if(!p)return;const total=gtt(p);const link=getLink(p);const tooLong=!link||link.length>8000;
+  const chips=p.selectedDays.map(d=>`<span style="padding:6px 12px;border-radius:8px;background:${DAY_COLORS[d]};color:#fff;font-size:12px;font-weight:600">${dayShort(d)}${p.dayHours[d]?' • '+esc(p.dayHours[d]):''}</span>`).join(" ");
+  $().innerHTML=`${langBtn()}<div style="min-height:100vh;background:#FAFAF8"><div style="max-width:520px;margin:0 auto;padding:32px 16px" class="fade-in">
+    <div style="text-align:center;margin-bottom:32px"><div style="font-size:48px;margin-bottom:12px">✅</div>
+    <h1 style="font-family:'Playfair Display',serif;font-size:28px;margin:0 0 8px">${t('scheduleComplete')}</h1>
+    <p style="color:#888;font-size:15px">${t('shareWithCleaner')}</p></div>
+    <div class="card" style="padding:20px 24px"><div style="font-size:12px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">${t('scheduleSummary')}</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:12px">🏠 ${esc(p.address)}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">${chips}</div>
+    <div style="font-size:14px;color:#666">${p.rooms.length} ${t('rooms')} • ${total} ${t('totalTasks')}</div></div>
+    <div class="card" style="padding:24px"><div style="font-size:12px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">${t('shareSection')}</div>
+      ${!tooLong?`<p style="font-size:13px;color:#666;margin-bottom:12px;line-height:1.5">${t('shareLinkDesc')} <strong>${esc(p.address)}</strong>. ${t('shareLinkDesc2')}</p>
+      <div style="background:#F7F5F0;border-radius:10px;padding:12px 14px;font-size:11px;color:#999;word-break:break-all;margin-bottom:12px;max-height:50px;overflow:hidden">${esc(link)}</div>
+      <button id="clBtn" onclick="copyLnk()" class="btn-primary" style="display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;margin-bottom:16px"><span style="font-size:18px">📋</span> ${t('copyLinkWhatsApp')}</button>
+      <div style="height:1px;background:#F0EDE8;margin:0 0 16px"></div>`:`<div style="background:#FFF3E0;border-radius:10px;padding:12px 16px;font-size:13px;color:#B8860B;margin-bottom:16px;line-height:1.5">⚠️ ${t('photosTooLarge')}</div>`}
+      <button id="ctBtn" onclick="copyTxt()" class="btn-outline" style="margin-bottom:12px"><span style="font-size:18px">📲</span> ${t('copyAsText')}</button>
+      <button onclick="printSch()" class="btn-outline"><span style="font-size:18px">🖨️</span> ${t('printSavePDF')}</button></div>
+    <button onclick="S.screen='preview';S.checkedTasks={};S.expandedRoom=null;var di=new Date().getDay();var tn=ALL_DAYS[di===0?6:di-1];var pp=getP();S.cleanerDay=pp.selectedDays.includes(tn)?tn:pp.selectedDays[0];R()" class="btn-outline" style="margin-top:16px;color:#E07A5F;border-color:rgba(224,122,95,.3)"><span style="font-size:18px">👀</span> ${t('previewCleanerView')}</button>
+    <button onclick="S.screen='schedule';R()" style="width:100%;padding:14px;background:transparent;color:#999;font-size:14px;margin-top:8px">${t('backToEditing')}</button>
+  ${ft()}</div></div>`;
+}
+
+function copyLnk(){const p=getP();const link=getLink(p);if(!link)return;
+  if(navigator.share){navigator.share({title:t('cleaningSchedule')+" — "+p.address,url:link}).catch(()=>{});}
+  else{navigator.clipboard.writeText(link).then(()=>{const b=document.getElementById("clBtn");b.innerHTML='<span style="font-size:18px">✓</span> '+t('copiedPaste');b.style.background="#81B29A";setTimeout(()=>{b.innerHTML='<span style="font-size:18px">📋</span> '+t('copyLinkWhatsApp');b.style.background="#2C2C2C";},3000);});}}
+
+function genTxt(p){let tx="🏠 "+t('cleaningSchedule').toUpperCase()+"\n"+p.address+"\n"+"═".repeat(40)+"\n\n";
+  p.selectedDays.forEach(d=>{const ord=gor(p,d);const has=ord.some(r=>(p.schedule[gk(d,r)]||[]).length>0);if(!has)return;
+    tx+="📅 "+d.toUpperCase()+(p.dayHours[d]?" ("+p.dayHours[d]+")":"")+"\n"+"─".repeat(30)+"\n";
+    ord.forEach((r,i)=>{const tasks=p.schedule[gk(d,r)]||[];const note=p.notes[gk(d,r)];if(!tasks.length)return;tx+="\n  "+(i+1)+": "+tRoom(r)+"\n";tasks.forEach(tk=>{tx+="    ☐ "+tTask(tk)+"\n";});if(note)tx+="    📝 "+note+"\n";});tx+="\n";});return tx;}
+
+function copyTxt(){const p=getP();const tx=genTxt(p);
+  if(navigator.share){navigator.share({title:t('cleaningSchedule')+" — "+p.address,text:tx}).catch(()=>{});}
+  else{navigator.clipboard.writeText(tx).then(()=>{const b=document.getElementById("ctBtn");b.innerHTML='<span style="font-size:18px">✓</span> '+t('copied');setTimeout(()=>{b.innerHTML='<span style="font-size:18px">📲</span> '+t('copyAsText');},2500);});}}
+
+function printSch(){const p=getP();const w=window.open("","_blank");if(!w){alert("Allow popups");return;}
+  let h=`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${t('cleaningSchedule')}</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif;padding:24px;max-width:650px;margin:0 auto}.day{margin-bottom:24px;border:1px solid #E8E6E1;border-radius:12px;overflow:hidden;page-break-inside:avoid}.dh{padding:14px 20px;color:#fff;font-weight:700;display:flex;justify-content:space-between}.rm{padding:12px 20px;border-bottom:1px solid #F0EDE8}.tk{display:flex;align-items:center;gap:8px;padding:4px 0 4px 32px;font-size:13px;color:#555}.cb{width:16px;height:16px;border:2px solid #CCC;border-radius:3px;flex-shrink:0}.nt{margin:8px 0 0 32px;padding:8px 12px;background:#FFF9EC;border-radius:6px;font-size:12px;color:#8B7355}.np{margin-top:20px;text-align:center}button{padding:12px 28px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:#2C2C2C;color:#fff;font-family:inherit}@media print{.np{display:none!important}}</style></head><body><div style="text-align:center;margin-bottom:28px"><div style="font-size:11px;letter-spacing:2px;color:#999;text-transform:uppercase;margin-bottom:4px">${t('cleaningSchedule')}</div><h1 style="font-family:'Playfair Display',serif;font-size:24px">${p.address}</h1></div>`;
+  p.selectedDays.forEach(d=>{const ord=gor(p,d);const has=ord.some(r=>(p.schedule[gk(d,r)]||[]).length>0);if(!has)return;h+=`<div class="day"><div class="dh" style="background:${DAY_COLORS[d]}"><span>${d}</span><span style="font-weight:400;font-size:13px">${p.dayHours[d]||''}</span></div>`;ord.forEach((r,i)=>{const tasks=p.schedule[gk(d,r)]||[];const note=p.notes[gk(d,r)];if(!tasks.length)return;h+=`<div class="rm"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:24px;height:24px;border-radius:50%;background:${DAY_COLORS[d]};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${i+1}</div><strong>${tRoom(r)}</strong></div>`;tasks.forEach(tk=>{h+=`<div class="tk"><div class="cb"></div>${tTask(tk)}</div>`;});if(note)h+=`<div class="nt"><strong>${t('note')}:</strong> ${note}</div>`;h+=`</div>`;});h+=`</div>`;});
+  h+=`<div class="np"><button onclick="window.print()">🖨️ ${t('printSavePDF')}</button></div></body></html>`;w.document.write(h);w.document.close();}
+
+// CLEANER VIEW
+function rPreview(){renderCV(getP(),true);}
+function rCleaner(){renderCV(S.cleanerData,false);}
+
+function renderCV(data,isPreview){if(!data)return;const cd=S.cleanerDay||data.selectedDays[0];S.cleanerDay=cd;
+  const dayIdx=new Date().getDay();const todayName=ALL_DAYS[dayIdx===0?6:dayIdx-1];
+  function dp(d){let t=0,dn=0;gor(data,d).forEach(r=>{(data.schedule[gk(d,r)]||[]).forEach((_,i)=>{t++;if(S.checkedTasks[gk(d,r)+"::"+i])dn++;});});return{total:t,done:dn};}
+  function rp(d,r){const tasks=data.schedule[gk(d,r)]||[];let dn=0;tasks.forEach((_,i)=>{if(S.checkedTasks[gk(d,r)+"::"+i])dn++;});return{total:tasks.length,done:dn};}
+
+  const{total,done}=dp(cd);const pct=total>0?Math.round(done/total*100):0;const allDn=done===total&&total>0;
+
+  const dayBtns=data.selectedDays.map(d=>{const active=cd===d;const{total:dt,done:dd}=dp(d);const isToday=d===todayName;
+    return `<button onclick="S.cleanerDay='${d}';S.expandedRoom=null;R()" style="padding:12px 18px;border-radius:14px;background:${active?DAY_COLORS[d]:'#fff'};color:${active?'#fff':'#666'};font-size:14px;font-weight:600;box-shadow:${active?'0 4px 16px '+DAY_COLORS[d]+'44':'0 2px 8px rgba(0,0,0,.05)'};white-space:nowrap;flex-shrink:0;position:relative">
+    ${isToday?`<span style="position:absolute;top:-4px;right:-4px;background:#E07A5F;color:#fff;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700">${t('today')}</span>`:''}
+    ${dayShort(d)}${dt>0?`<span style="display:block;font-size:11px;opacity:.85;margin-top:2px;font-weight:400">${dd}/${dt}</span>`:''}</button>`;}).join("");
+
+  const ord=gor(data,cd);
+  const rc=ord.map((room,si)=>{const key=gk(cd,room);const tasks=data.schedule[key]||[];if(!tasks.length)return'';
+    const{total:rt,done:rd}=rp(cd,room);const comp=rd===rt;const exp=S.expandedRoom===room;const dash=rt>0?`${(rd/rt)*88} 88`:"0 88";
+    let th='';
+    if(exp){const items=tasks.map((tk,i)=>{const tkey=key+"::"+i;const isDone=!!S.checkedTasks[tkey];
+        return `<div class="task-tap" onclick="S.checkedTasks['${tkey}']=!S.checkedTasks['${tkey}'];R()" style="display:flex;align-items:center;gap:14px;padding:14px 16px;margin-bottom:6px;background:${isDone?'#F0FAF4':'#FAFAF8'};border-radius:12px;cursor:pointer;user-select:none;border:${isDone?'1px solid #81B29A44':'1px solid transparent'}">
+          <div style="width:24px;height:24px;border-radius:7px;border:${isDone?'none':'2px solid '+DAY_COLORS[cd]+'88'};background:${isDone?'#81B29A':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;${isDone?'animation:checkPop .3s ease':''}">
+            ${isDone?'<span style="color:#fff;font-size:14px;font-weight:700">✓</span>':''}</div>
+          <span style="font-size:15px;color:${isDone?'#81B29A':'#444'};text-decoration:${isDone?'line-through':'none'};flex:1">${tTask(tk)}</span></div>`;}).join("");
+      const noteH=data.notes[key]?`<div style="margin-top:12px;padding:12px 16px;background:#FFF9EC;border-radius:12px;font-size:14px;color:#8B7355;line-height:1.6"><strong style="display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:1px">${t('note')}</strong>${esc(data.notes[key])}</div>`:'';
+      const phH=(data.photos[key]||[]).length?`<div style="margin-top:12px"><div style="font-size:12px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">${t('refPhotos')}</div><div style="display:flex;gap:10px;flex-wrap:wrap">${(data.photos[key]||[]).map(p=>`<img src="${p}" onclick="this.style.width=this.style.width==='100%'?'90px':'100%';this.style.height=this.style.width==='100%'?'auto':'90px'" style="width:90px;height:90px;object-fit:cover;border-radius:12px;border:1px solid #E8E6E1;cursor:pointer;transition:all .3s">`).join("")}</div></div>`:'';
+      th=`<div style="padding:0 20px 20px" class="fade-in">${items}${noteH}${phH}</div>`;}
+
+    return `<div style="background:#fff;border-radius:16px;border:${comp?'2px solid #81B29A66':'1px solid #E8E6E1'};margin-bottom:12px;overflow:hidden;box-shadow:${exp?'0 4px 20px rgba(0,0,0,.08)':'0 2px 8px rgba(0,0,0,.03)'}">
+      <div onclick="S.expandedRoom=S.expandedRoom==='${esc(room)}'?null:'${esc(room)}';R()" style="padding:16px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none">
+        <span style="background:${comp?'#81B29A':DAY_COLORS[cd]};color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">${comp?'✓':si+1}</span>
+        <div style="flex:1"><div style="font-weight:600;font-size:16px;color:${comp?'#81B29A':'#2C2C2C'};text-decoration:${comp?'line-through':'none'}">${tRoom(room)}</div>
+        <div style="font-size:12px;color:#999;margin-top:2px">${rd}/${rt} ${t('complete')}</div></div>
+        <svg width="36" height="36" style="flex-shrink:0"><circle cx="18" cy="18" r="14" fill="none" stroke="#E8E6E1" stroke-width="3"/><circle cx="18" cy="18" r="14" fill="none" stroke="${comp?'#81B29A':DAY_COLORS[cd]}" stroke-width="3" stroke-dasharray="${dash}" stroke-linecap="round" transform="rotate(-90 18 18)" style="transition:stroke-dasharray .4s"/></svg>
+        <span style="font-size:20px;color:#CCC;transform:${exp?'rotate(180deg)':'none'};transition:transform .2s">▾</span></div>${th}</div>`;}).join("");
+
+  const celeb=allDn?`<div style="background:linear-gradient(135deg,#81B29A22,#81B29A11);border:2px solid #81B29A44;border-radius:16px;padding:24px;text-align:center;margin-bottom:20px" class="fade-in"><div style="font-size:48px;margin-bottom:8px">🎉</div><div style="font-size:20px;font-weight:700;margin-bottom:4px">${t('allDone')}</div><div style="font-size:14px;color:#888">${t('allDoneDesc')}</div></div>`:'';
+
+  $().innerHTML=`${langBtn()}<div style="min-height:100vh;background:#FAFAF8;padding-bottom:100px">
+    <div style="background:#fff;border-bottom:1px solid #E8E6E1;padding:16px 20px;position:sticky;top:0;z-index:100">
+      <div style="max-width:600px;margin:0 auto;display:flex;align-items:center;justify-content:space-between"><div>
+        <div style="font-size:11px;letter-spacing:2px;color:#999;text-transform:uppercase">${t('cleaningSchedule')}</div>
+        <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700">${esc(data.address)}</div></div>
+        ${isPreview?`<button onclick="S.screen='share';R()" style="padding:7px 12px;background:#fff;border:2px solid #E8E6E1;border-radius:8px;font-size:12px;font-weight:600;color:#666">${t('back')}</button>`:''}</div></div>
+    <div style="max-width:600px;margin:0 auto;padding:16px">
+      <div class="day-tabs" style="display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px">${dayBtns}</div>
+      <div class="fade-in">
+        <div style="margin-bottom:20px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:14px;font-weight:600">${data.dayHours[cd]?'<span style="color:#999;font-weight:400">'+esc(data.dayHours[cd])+' • </span>':''}${done} ${t('of')} ${total} ${t('tasksDone')}</span>
+          <span style="font-size:22px;font-weight:700;color:${DAY_COLORS[cd]}">${pct}%</span></div>
+          <div style="height:8px;background:#E8E6E1;border-radius:10px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${DAY_COLORS[cd]},${DAY_COLORS[cd]}CC);border-radius:10px;transition:width .4s ease"></div></div></div>
+        ${celeb}${rc}</div>${ft()}</div></div>`;
+}
+
+// INIT
+if(!checkURL()){load();}R();
+</script>
+</body>
+</html>
